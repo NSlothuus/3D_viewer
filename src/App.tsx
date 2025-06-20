@@ -18,11 +18,21 @@ const GlobalStyle = createGlobalStyle`
     background-color: #1a1a1a;
     color: #ffffff;
     overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
   }
 
   #root {
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
   }
 
   /* Scrollbar styling */

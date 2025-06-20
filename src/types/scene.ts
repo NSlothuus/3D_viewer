@@ -128,6 +128,7 @@ export interface SceneState {
   environment?: {
     type: 'hdri' | 'color' | 'gradient';
     hdriUrl?: string;
+    hdriFormat?: string;
     color?: THREE.Color;
     intensity: number;
   };

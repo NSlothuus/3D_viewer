@@ -10,27 +10,38 @@ interface TransformControlsProps {
 }
 
 const TransformControls: React.FC<TransformControlsProps> = ({ enabled, mode }) => {
-  const { selectedObjects, getSelectedObjects, updateObject } = useSceneStore();
+  const { selectedObjects, getSelectedObjects, updateObject, getMesh, transformMode, transformEnabled } = useSceneStore();
   const { camera, gl } = useThree();
   const controlsRef = useRef<any>(null);
 
   const selectedObjectsList = getSelectedObjects();
   const selectedObject = selectedObjectsList.length === 1 ? selectedObjectsList[0] : null;
+  const selectedMesh = selectedObject ? getMesh(selectedObject.id) : null;
+  
+  // Use store's transform mode if no mode prop is provided
+  const currentMode = mode || transformMode;
+  const isEnabled = enabled !== undefined ? enabled : transformEnabled;
 
   useEffect(() => {
-    if (controlsRef.current && selectedObject) {
-      controlsRef.current.attach(selectedObject.object3D);
+    if (controlsRef.current && selectedMesh) {
+      controlsRef.current.attach(selectedMesh);
     }
-  }, [selectedObject]);
+  }, [selectedMesh]);
 
   const handleObjectChange = () => {
-    if (selectedObject && controlsRef.current) {
+    if (selectedObject && selectedMesh && controlsRef.current) {
+      // Update the object3D in the store with the mesh's current transform
+      const updatedObject3D = selectedObject.object3D.clone();
+      updatedObject3D.position.copy(selectedMesh.position);
+      updatedObject3D.rotation.copy(selectedMesh.rotation);
+      updatedObject3D.scale.copy(selectedMesh.scale);
+      
       // Update the object in the store
-      updateObject(selectedObject.id, { object3D: selectedObject.object3D });
+      updateObject(selectedObject.id, { object3D: updatedObject3D });
     }
   };
 
-  if (!enabled || !selectedObject) {
+  if (!isEnabled || !selectedObject || !selectedMesh) {
     return null;
   }
 
@@ -39,8 +50,8 @@ const TransformControls: React.FC<TransformControlsProps> = ({ enabled, mode }) 
       ref={controlsRef}
       camera={camera}
       domElement={gl.domElement}
-      object={selectedObject.object3D}
-      mode={mode}
+      object={selectedMesh}
+      mode={currentMode}
       size={1}
       showX={true}
       showY={true}

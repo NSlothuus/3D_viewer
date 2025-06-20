@@ -8,16 +8,42 @@ import SceneLights from './SceneLights';
 import TransformControls from '../Controls/TransformControls';
 import SelectionHelper from '../Controls/SelectionHelper';
 import FileUpload from '../../UI/Common/FileUpload';
-
 interface SceneProps {
   onObjectClick?: (objectId: string, event: ThreeEvent<MouseEvent>) => void;
 }
 
+// Simple error boundary for environment loading
+class EnvironmentErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallback: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; fallback: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    console.error('Environment loading error:', error);
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Environment error details:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+
+    return this.props.children;
+  }
+}
+
 const Scene: React.FC<SceneProps> = ({ onObjectClick }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [transformMode, setTransformMode] = useState<'translate' | 'rotate' | 'scale'>('translate');
-  const [transformEnabled, setTransformEnabled] = useState(true);
-  const { renderSettings, camera, environment, selectedObjects } = useSceneStore();
+  const { renderSettings, camera, environment, selectedObjects, transformMode, transformEnabled, setTransformMode, setTransformEnabled, clearSelection } = useSceneStore();
+
 
   // Handle keyboard shortcuts for transform modes
   useEffect(() => {
@@ -66,11 +92,24 @@ const Scene: React.FC<SceneProps> = ({ onObjectClick }) => {
           gl.shadowMap.enabled = renderSettings.shadows;
           gl.shadowMap.type = renderSettings.shadowType;
         }}
+        onPointerMissed={clearSelection}
         style={{ background: 'transparent' }}
       >
       {/* Environment */}
       {environment?.type === 'hdri' && environment.hdriUrl ? (
-        <Environment files={environment.hdriUrl} />
+        <EnvironmentErrorBoundary
+          fallback={
+            <color
+              attach="background"
+              args={[new THREE.Color(0x222222)]}
+            />
+          }
+        >
+          <Environment
+            files={environment.hdriUrl}
+            background={true}
+          />
+        </EnvironmentErrorBoundary>
       ) : (
         <color
           attach="background"
@@ -94,7 +133,7 @@ const Scene: React.FC<SceneProps> = ({ onObjectClick }) => {
       />
 
       {/* Lights */}
-      <SceneLights />
+      <SceneLights onObjectClick={onObjectClick} />
 
       {/* Objects */}
       <SceneObjects onObjectClick={onObjectClick} />
@@ -119,6 +158,7 @@ const Scene: React.FC<SceneProps> = ({ onObjectClick }) => {
         maxPolarAngle={Math.PI}
         minDistance={0.1}
         maxDistance={1000}
+        enabled={!(transformEnabled && selectedObjects.length === 1)}
       />
 
       {/* Ambient light for basic visibility */}

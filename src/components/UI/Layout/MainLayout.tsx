@@ -10,11 +10,16 @@ import { useSceneStore } from '../../../stores/sceneStore';
 const LayoutContainer = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   background-color: #1a1a1a;
   color: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 `;
 
 const MainContent = styled.div`
@@ -29,9 +34,9 @@ const ViewportContainer = styled.div`
   background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
 `;
 
-const LeftPanel = styled.div<{ isVisible: boolean; width: number }>`
-  width: ${props => props.isVisible ? props.width : 0}px;
-  min-width: ${props => props.isVisible ? '200px' : '0px'};
+const LeftPanel = styled.div<{ $isVisible: boolean; $width: number }>`
+  width: ${props => props.$isVisible ? props.$width : 0}px;
+  min-width: ${props => props.$isVisible ? '200px' : '0px'};
   max-width: 400px;
   background-color: #2a2a2a;
   border-right: 1px solid #404040;
@@ -39,9 +44,9 @@ const LeftPanel = styled.div<{ isVisible: boolean; width: number }>`
   overflow: hidden;
 `;
 
-const RightPanel = styled.div<{ isVisible: boolean; width: number }>`
-  width: ${props => props.isVisible ? props.width : 0}px;
-  min-width: ${props => props.isVisible ? '250px' : '0px'};
+const RightPanel = styled.div<{ $isVisible: boolean; $width: number }>`
+  width: ${props => props.$isVisible ? props.$width : 0}px;
+  min-width: ${props => props.$isVisible ? '250px' : '0px'};
   max-width: 400px;
   background-color: #2a2a2a;
   border-left: 1px solid #404040;
@@ -75,7 +80,7 @@ const MainLayout: React.FC = () => {
       />
       
       <MainContent>
-        <LeftPanel isVisible={leftPanelVisible} width={leftPanelWidth}>
+        <LeftPanel $isVisible={leftPanelVisible} $width={leftPanelWidth}>
           <Outliner />
         </LeftPanel>
         
@@ -83,7 +88,7 @@ const MainLayout: React.FC = () => {
           <Scene onObjectClick={handleObjectClick} />
         </ViewportContainer>
         
-        <RightPanel isVisible={rightPanelVisible} width={rightPanelWidth}>
+        <RightPanel $isVisible={rightPanelVisible} $width={rightPanelWidth}>
           {rightPanelTab === 'properties' ? <Properties /> : <RenderSettings />}
         </RightPanel>
       </MainContent>

@@ -25,14 +25,14 @@ const ToolbarSection = styled.div`
   }
 `;
 
-const ToolbarButton = styled.button<{ active?: boolean }>`
+const ToolbarButton = styled.button<{ $active?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
   width: 32px;
   height: 32px;
-  background-color: ${props => props.active ? '#4a9eff' : 'transparent'};
-  border: 1px solid ${props => props.active ? '#4a9eff' : '#555555'};
+  background-color: ${props => props.$active ? '#4a9eff' : 'transparent'};
+  border: 1px solid ${props => props.$active ? '#4a9eff' : '#555555'};
   border-radius: 4px;
   color: #ffffff;
   cursor: pointer;
@@ -40,8 +40,8 @@ const ToolbarButton = styled.button<{ active?: boolean }>`
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: ${props => props.active ? '#3a8eef' : '#444444'};
-    border-color: ${props => props.active ? '#3a8eef' : '#666666'};
+    background-color: ${props => props.$active ? '#3a8eef' : '#444444'};
+    border-color: ${props => props.$active ? '#3a8eef' : '#666666'};
   }
 
   &:disabled {
@@ -69,6 +69,10 @@ const DropdownButton = styled.select`
   }
 `;
 
+const HiddenFileInput = styled.input`
+  display: none;
+`;
+
 interface ToolbarProps {
   onToggleLeftPanel: () => void;
   onToggleRightPanel: () => void;
@@ -86,7 +90,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onRightPanelTabChange,
   rightPanelTab,
 }) => {
-  const { addObject, generateId, viewMode, setViewMode } = useSceneStore();
+  const { addObject, generateId, viewMode, setViewMode, setEnvironment, transformMode, setTransformMode } = useSceneStore();
 
   const createPrimitive = (type: 'box' | 'sphere' | 'plane' | 'cylinder' | 'torus') => {
     const id = generateId();
@@ -162,19 +166,57 @@ const Toolbar: React.FC<ToolbarProps> = ({
     });
   };
 
+  const handleHDRIUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        // Create a blob URL for the file
+        const url = URL.createObjectURL(file);
+        const fileExtension = file.name.split('.').pop()?.toLowerCase();
+        
+        // For now, let's try without specifying format and let drei auto-detect
+        setEnvironment({
+          type: 'hdri',
+          hdriUrl: url,
+          hdriFormat: fileExtension,
+          intensity: 1.0,
+        });
+      } catch (error) {
+        console.error('Error loading HDRI file:', error);
+        alert('Error loading HDRI file. Please try a different file.');
+      }
+    }
+  };
+
+  const clearEnvironment = () => {
+    setEnvironment({
+      type: 'color',
+      color: new THREE.Color(0x222222),
+      intensity: 1.0,
+    });
+  };
+
+  const hdriInputRef = React.useRef<HTMLInputElement>(null);
+
   return (
     <ToolbarContainer>
+      <HiddenFileInput
+        ref={hdriInputRef}
+        type="file"
+        accept=".hdr,.exr,.jpg,.jpeg,.png"
+        onChange={handleHDRIUpload}
+      />
       {/* Panel toggles */}
       <ToolbarSection>
         <ToolbarButton
-          active={leftPanelVisible}
+          $active={leftPanelVisible}
           onClick={onToggleLeftPanel}
           title="Toggle Outliner"
         >
           ☰
         </ToolbarButton>
         <ToolbarButton
-          active={rightPanelVisible && rightPanelTab === 'properties'}
+          $active={rightPanelVisible && rightPanelTab === 'properties'}
           onClick={() => {
             if (rightPanelTab === 'properties') {
               onToggleRightPanel();
@@ -188,7 +230,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
           ⚙
         </ToolbarButton>
         <ToolbarButton
-          active={rightPanelVisible && rightPanelTab === 'render'}
+          $active={rightPanelVisible && rightPanelTab === 'render'}
           onClick={() => {
             if (rightPanelTab === 'render') {
               onToggleRightPanel();
@@ -237,14 +279,42 @@ const Toolbar: React.FC<ToolbarProps> = ({
 
       {/* Transform Tools */}
       <ToolbarSection>
-        <ToolbarButton title="Move (G)">
+        <ToolbarButton
+          $active={transformMode === 'translate'}
+          onClick={() => setTransformMode('translate')}
+          title="Move (G)"
+        >
           🔄
         </ToolbarButton>
-        <ToolbarButton title="Rotate (R)">
+        <ToolbarButton
+          $active={transformMode === 'rotate'}
+          onClick={() => setTransformMode('rotate')}
+          title="Rotate (R)"
+        >
           🔃
         </ToolbarButton>
-        <ToolbarButton title="Scale (S)">
+        <ToolbarButton
+          $active={transformMode === 'scale'}
+          onClick={() => setTransformMode('scale')}
+          title="Scale (S)"
+        >
           📏
+        </ToolbarButton>
+      </ToolbarSection>
+
+      {/* Environment */}
+      <ToolbarSection>
+        <ToolbarButton
+          onClick={() => hdriInputRef.current?.click()}
+          title="Load HDRI Environment"
+        >
+          🌍
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={clearEnvironment}
+          title="Clear Environment"
+        >
+          🗑️
         </ToolbarButton>
       </ToolbarSection>
 

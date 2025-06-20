@@ -48,18 +48,18 @@ const ObjectList = styled.div`
   padding: 8px 0;
 `;
 
-const ObjectItem = styled.div<{ selected: boolean; level: number }>`
+const ObjectItem = styled.div<{ $selected: boolean; $level: number }>`
   display: flex;
   align-items: center;
   padding: 4px 16px;
-  padding-left: ${props => 16 + props.level * 20}px;
+  padding-left: ${props => 16 + props.$level * 20}px;
   cursor: pointer;
   font-size: 12px;
-  color: ${props => props.selected ? '#4a9eff' : '#ffffff'};
-  background-color: ${props => props.selected ? '#2a4a6b' : 'transparent'};
+  color: ${props => props.$selected ? '#4a9eff' : '#ffffff'};
+  background-color: ${props => props.$selected ? '#2a4a6b' : 'transparent'};
 
   &:hover {
-    background-color: ${props => props.selected ? '#2a4a6b' : '#333333'};
+    background-color: ${props => props.$selected ? '#2a4a6b' : '#333333'};
   }
 `;
 
@@ -81,12 +81,12 @@ const ObjectControls = styled.div`
   margin-left: 8px;
 `;
 
-const ControlButton = styled.button<{ active?: boolean }>`
+const ControlButton = styled.button<{ $active?: boolean }>`
   width: 16px;
   height: 16px;
   background: none;
   border: none;
-  color: ${props => props.active ? '#4a9eff' : '#888888'};
+  color: ${props => props.$active ? '#4a9eff' : '#888888'};
   cursor: pointer;
   font-size: 10px;
   display: flex;
@@ -174,22 +174,22 @@ const Outliner: React.FC = () => {
     return (
       <div key={object.id}>
         <ObjectItem
-          selected={isSelected}
-          level={level}
+          $selected={isSelected}
+          $level={level}
           onClick={(e) => handleObjectClick(object.id, e)}
         >
           <ObjectIcon>{getObjectIcon(object)}</ObjectIcon>
           <ObjectName>{object.name}</ObjectName>
           <ObjectControls>
             <ControlButton
-              active={object.visible}
+              $active={object.visible}
               onClick={(e) => handleVisibilityToggle(object.id, e)}
               title={object.visible ? 'Hide' : 'Show'}
             >
               {object.visible ? '👁' : '🙈'}
             </ControlButton>
             <ControlButton
-              active={object.locked}
+              $active={object.locked}
               onClick={(e) => handleLockToggle(object.id, e)}
               title={object.locked ? 'Unlock' : 'Lock'}
             >
@@ -223,7 +223,7 @@ const Outliner: React.FC = () => {
       
       <ObjectList>
         {filteredObjects.length === 0 ? (
-          <ObjectItem selected={false} level={0}>
+          <ObjectItem $selected={false} $level={0}>
             <ObjectName style={{ color: '#888888', fontStyle: 'italic' }}>
               {searchTerm ? 'No objects found' : 'No objects in scene'}
             </ObjectName>

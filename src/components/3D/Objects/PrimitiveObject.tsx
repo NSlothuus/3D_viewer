@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useFrame, ThreeEvent } from '@react-three/fiber';
 import { Mesh } from 'three';
 import { SceneObject } from '../../../types/scene';
@@ -16,7 +16,17 @@ const PrimitiveObject: React.FC<PrimitiveObjectProps> = ({
   onClick,
 }) => {
   const meshRef = useRef<Mesh>(null);
-  const { viewMode } = useSceneStore();
+  const { viewMode, registerMesh, unregisterMesh } = useSceneStore();
+
+  // Register/unregister mesh for transform controls
+  useEffect(() => {
+    if (meshRef.current) {
+      registerMesh(object.id, meshRef.current);
+    }
+    return () => {
+      unregisterMesh(object.id);
+    };
+  }, [object.id, registerMesh, unregisterMesh]);
 
   useFrame(() => {
     if (meshRef.current && object.object3D) {

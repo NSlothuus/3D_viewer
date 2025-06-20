@@ -243,6 +243,11 @@ const Properties: React.FC = () => {
     const lightProperties = selectedObject.object3D.userData.lightProperties;
     if (!lightProperties) return null;
 
+    // Ensure color is always a THREE.Color object
+    if (!lightProperties.color || typeof lightProperties.color.getHexString !== 'function') {
+      lightProperties.color = new THREE.Color(lightProperties.color || 0xffffff);
+    }
+
     return (
       <PropertySection>
         <SectionTitle>Light Properties</SectionTitle>

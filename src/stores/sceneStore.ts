@@ -3,6 +3,11 @@ import * as THREE from 'three';
 import { SceneState, SceneObject, RenderSettings, ViewMode, CameraSettings } from '../types/scene';
 
 interface SceneStore extends SceneState {
+  // Mesh registry for transform controls
+  meshRegistry: Map<string, THREE.Object3D>;
+  // Transform state
+  transformMode: 'translate' | 'rotate' | 'scale';
+  transformEnabled: boolean;
   // Actions
   addObject: (object: SceneObject) => void;
   removeObject: (id: string) => void;
@@ -16,6 +21,13 @@ interface SceneStore extends SceneState {
   setViewMode: (mode: ViewMode) => void;
   updateCamera: (settings: Partial<CameraSettings>) => void;
   setEnvironment: (environment: SceneState['environment']) => void;
+  // Transform methods
+  setTransformMode: (mode: 'translate' | 'rotate' | 'scale') => void;
+  setTransformEnabled: (enabled: boolean) => void;
+  // Mesh registry methods
+  registerMesh: (objectId: string, mesh: THREE.Object3D) => void;
+  unregisterMesh: (objectId: string) => void;
+  getMesh: (objectId: string) => THREE.Object3D | undefined;
   // Utility
   getObject: (id: string) => SceneObject | undefined;
   getSelectedObjects: () => SceneObject[];
@@ -61,6 +73,9 @@ export const useSceneStore = create<SceneStore>((set, get) => ({
     color: new THREE.Color(0x222222),
     intensity: 1.0,
   },
+  meshRegistry: new Map(),
+  transformMode: 'translate',
+  transformEnabled: true,
 
   // Actions
   addObject: (object: SceneObject) => {
@@ -170,6 +185,36 @@ export const useSceneStore = create<SceneStore>((set, get) => ({
 
   setEnvironment: (environment: SceneState['environment']) => {
     set({ environment });
+  },
+
+  // Transform methods
+  setTransformMode: (mode: 'translate' | 'rotate' | 'scale') => {
+    set({ transformMode: mode });
+  },
+
+  setTransformEnabled: (enabled: boolean) => {
+    set({ transformEnabled: enabled });
+  },
+
+  // Mesh registry methods
+  registerMesh: (objectId: string, mesh: THREE.Object3D) => {
+    set((state) => {
+      const newMeshRegistry = new Map(state.meshRegistry);
+      newMeshRegistry.set(objectId, mesh);
+      return { meshRegistry: newMeshRegistry };
+    });
+  },
+
+  unregisterMesh: (objectId: string) => {
+    set((state) => {
+      const newMeshRegistry = new Map(state.meshRegistry);
+      newMeshRegistry.delete(objectId);
+      return { meshRegistry: newMeshRegistry };
+    });
+  },
+
+  getMesh: (objectId: string) => {
+    return get().meshRegistry.get(objectId);
   },
 
   // Utility functions

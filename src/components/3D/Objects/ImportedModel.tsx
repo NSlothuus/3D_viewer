@@ -1,7 +1,8 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useFrame, ThreeEvent } from '@react-three/fiber';
 import { Group } from 'three';
 import { SceneObject } from '../../../types/scene';
+import { useSceneStore } from '../../../stores/sceneStore';
 
 interface ImportedModelProps {
   object: SceneObject;
@@ -15,6 +16,17 @@ const ImportedModel: React.FC<ImportedModelProps> = ({
   onClick,
 }) => {
   const groupRef = useRef<Group>(null);
+  const { registerMesh, unregisterMesh } = useSceneStore();
+
+  // Register/unregister mesh for transform controls
+  useEffect(() => {
+    if (groupRef.current) {
+      registerMesh(object.id, groupRef.current);
+    }
+    return () => {
+      unregisterMesh(object.id);
+    };
+  }, [object.id, registerMesh, unregisterMesh]);
 
   useFrame(() => {
     if (groupRef.current && object.object3D) {

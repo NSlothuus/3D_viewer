@@ -5,19 +5,19 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 import * as THREE from 'three';
 
-const DropZone = styled.div<{ isDragOver: boolean }>`
+const DropZone = styled.div<{ $isDragOver: boolean }>`
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: ${props => props.isDragOver ? 'rgba(74, 158, 255, 0.2)' : 'transparent'};
-  border: ${props => props.isDragOver ? '2px dashed #4a9eff' : 'none'};
-  display: ${props => props.isDragOver ? 'flex' : 'none'};
+  background-color: ${props => props.$isDragOver ? 'rgba(74, 158, 255, 0.2)' : 'transparent'};
+  border: ${props => props.$isDragOver ? '2px dashed #4a9eff' : 'none'};
+  display: ${props => props.$isDragOver ? 'flex' : 'none'};
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  pointer-events: ${props => props.isDragOver ? 'all' : 'none'};
+  pointer-events: ${props => props.$isDragOver ? 'all' : 'none'};
 `;
 
 const DropMessage = styled.div`
@@ -230,7 +230,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ children }) => {
     >
       {children}
       
-      <DropZone isDragOver={isDragOver}>
+      <DropZone $isDragOver={isDragOver}>
         <DropMessage>
           Drop 3D files here
           <br />
