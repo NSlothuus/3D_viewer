@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import Scene from '../../3D/Scene/Scene';
 import Outliner from '../Panels/Outliner';
 import Properties from '../Panels/Properties';
+import RenderSettings from '../Panels/RenderSettings';
 import Toolbar from './Toolbar';
 import { useSceneStore } from '../../../stores/sceneStore';
 
@@ -53,6 +54,7 @@ const MainLayout: React.FC = () => {
   const [rightPanelVisible, setRightPanelVisible] = useState(true);
   const [leftPanelWidth, setLeftPanelWidth] = useState(300);
   const [rightPanelWidth, setRightPanelWidth] = useState(300);
+  const [rightPanelTab, setRightPanelTab] = useState<'properties' | 'render'>('properties');
 
   const { selectObject } = useSceneStore();
 
@@ -68,6 +70,8 @@ const MainLayout: React.FC = () => {
         onToggleRightPanel={() => setRightPanelVisible(!rightPanelVisible)}
         leftPanelVisible={leftPanelVisible}
         rightPanelVisible={rightPanelVisible}
+        onRightPanelTabChange={setRightPanelTab}
+        rightPanelTab={rightPanelTab}
       />
       
       <MainContent>
@@ -80,7 +84,7 @@ const MainLayout: React.FC = () => {
         </ViewportContainer>
         
         <RightPanel isVisible={rightPanelVisible} width={rightPanelWidth}>
-          <Properties />
+          {rightPanelTab === 'properties' ? <Properties /> : <RenderSettings />}
         </RightPanel>
       </MainContent>
     </LayoutContainer>

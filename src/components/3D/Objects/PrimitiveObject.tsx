@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { useFrame, ThreeEvent } from '@react-three/fiber';
 import { Mesh } from 'three';
 import { SceneObject } from '../../../types/scene';
+import { useSceneStore } from '../../../stores/sceneStore';
 
 interface PrimitiveObjectProps {
   object: SceneObject;
@@ -15,6 +16,7 @@ const PrimitiveObject: React.FC<PrimitiveObjectProps> = ({
   onClick,
 }) => {
   const meshRef = useRef<Mesh>(null);
+  const { viewMode } = useSceneStore();
 
   useFrame(() => {
     if (meshRef.current && object.object3D) {
@@ -91,6 +93,33 @@ const PrimitiveObject: React.FC<PrimitiveObjectProps> = ({
     }
   };
 
+  const getMaterial = () => {
+    const baseColor = '#ffffff';
+    
+    switch (viewMode.type) {
+      case 'wireframe':
+        return (
+          <meshStandardMaterial
+            color={baseColor}
+            wireframe={true}
+          />
+        );
+      case 'solid':
+        return (
+          <meshBasicMaterial
+            color={baseColor}
+          />
+        );
+      case 'shaded':
+      default:
+        return (
+          <meshStandardMaterial
+            color={baseColor}
+          />
+        );
+    }
+  };
+
   return (
     <mesh
       ref={meshRef}
@@ -99,18 +128,7 @@ const PrimitiveObject: React.FC<PrimitiveObjectProps> = ({
       receiveShadow
     >
       {renderGeometry()}
-      <meshStandardMaterial
-        color={isSelected ? '#ff6b6b' : '#ffffff'}
-        wireframe={isSelected}
-        transparent={isSelected}
-        opacity={isSelected ? 0.8 : 1.0}
-      />
-      {isSelected && (
-        <lineSegments>
-          <edgesGeometry args={[meshRef.current?.geometry]} />
-          <lineBasicMaterial color="#ff6b6b" />
-        </lineSegments>
-      )}
+      {getMaterial()}
     </mesh>
   );
 };

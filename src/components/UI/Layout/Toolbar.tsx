@@ -74,6 +74,8 @@ interface ToolbarProps {
   onToggleRightPanel: () => void;
   leftPanelVisible: boolean;
   rightPanelVisible: boolean;
+  onRightPanelTabChange: (tab: 'properties' | 'render') => void;
+  rightPanelTab: 'properties' | 'render';
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
@@ -81,6 +83,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onToggleRightPanel,
   leftPanelVisible,
   rightPanelVisible,
+  onRightPanelTabChange,
+  rightPanelTab,
 }) => {
   const { addObject, generateId, viewMode, setViewMode } = useSceneStore();
 
@@ -170,11 +174,32 @@ const Toolbar: React.FC<ToolbarProps> = ({
           ☰
         </ToolbarButton>
         <ToolbarButton
-          active={rightPanelVisible}
-          onClick={onToggleRightPanel}
+          active={rightPanelVisible && rightPanelTab === 'properties'}
+          onClick={() => {
+            if (rightPanelTab === 'properties') {
+              onToggleRightPanel();
+            } else {
+              onRightPanelTabChange('properties');
+              if (!rightPanelVisible) onToggleRightPanel();
+            }
+          }}
           title="Toggle Properties"
         >
           ⚙
+        </ToolbarButton>
+        <ToolbarButton
+          active={rightPanelVisible && rightPanelTab === 'render'}
+          onClick={() => {
+            if (rightPanelTab === 'render') {
+              onToggleRightPanel();
+            } else {
+              onRightPanelTabChange('render');
+              if (!rightPanelVisible) onToggleRightPanel();
+            }
+          }}
+          title="Render Settings"
+        >
+          🎨
         </ToolbarButton>
       </ToolbarSection>
 
@@ -207,6 +232,19 @@ const Toolbar: React.FC<ToolbarProps> = ({
         </ToolbarButton>
         <ToolbarButton onClick={() => createLight('directional')} title="Add Directional Light">
           ☀️
+        </ToolbarButton>
+      </ToolbarSection>
+
+      {/* Transform Tools */}
+      <ToolbarSection>
+        <ToolbarButton title="Move (G)">
+          🔄
+        </ToolbarButton>
+        <ToolbarButton title="Rotate (R)">
+          🔃
+        </ToolbarButton>
+        <ToolbarButton title="Scale (S)">
+          📏
         </ToolbarButton>
       </ToolbarSection>
 
