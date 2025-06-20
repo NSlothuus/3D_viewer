@@ -1,0 +1,42 @@
+{
+  "name": "3d-viewer",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "dependencies": {
+    "@react-three/drei": "^9.88.13",
+    "@react-three/fiber": "^8.15.11",
+    "@react-three/postprocessing": "^2.15.11",
+    "@types/three": "^0.158.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "styled-components": "^6.1.6",
+    "three": "^0.158.0",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@types/styled-components": "^5.1.34",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NSlothuus/3D_viewer.git"
+  },
+  "keywords": ["3d", "viewer", "react", "three.js", "typescript"],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NSlothuus/3D_viewer/issues"
+  },
+  "homepage": "https://github.com/NSlothuus/3D_viewer#readme",
+  "description": "Modern 3D viewer web application with comprehensive scene management and rendering capabilities"
+}
