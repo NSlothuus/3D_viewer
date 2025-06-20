@@ -8,6 +8,10 @@ interface SceneStore extends SceneState {
   // Transform state
   transformMode: 'translate' | 'rotate' | 'scale';
   transformEnabled: boolean;
+  // Global animation state
+  globalAnimationTime: number;
+  isGlobalAnimationPlaying: boolean;
+  globalAnimationSpeed: number;
   // Actions
   addObject: (object: SceneObject) => void;
   removeObject: (id: string) => void;
@@ -24,6 +28,11 @@ interface SceneStore extends SceneState {
   // Transform methods
   setTransformMode: (mode: 'translate' | 'rotate' | 'scale') => void;
   setTransformEnabled: (enabled: boolean) => void;
+  // Animation methods
+  setGlobalAnimationTime: (time: number) => void;
+  setGlobalAnimationPlaying: (playing: boolean) => void;
+  setGlobalAnimationSpeed: (speed: number) => void;
+  updateObjectAnimation: (objectId: string, animationUpdates: Partial<SceneObject['animations']>) => void;
   // Mesh registry methods
   registerMesh: (objectId: string, mesh: THREE.Object3D) => void;
   unregisterMesh: (objectId: string) => void;
@@ -31,6 +40,7 @@ interface SceneStore extends SceneState {
   // Utility
   getObject: (id: string) => SceneObject | undefined;
   getSelectedObjects: () => SceneObject[];
+  getAnimatedObjects: () => SceneObject[];
   generateId: () => string;
 }
 
@@ -76,6 +86,9 @@ export const useSceneStore = create<SceneStore>((set, get) => ({
   meshRegistry: new Map(),
   transformMode: 'translate',
   transformEnabled: true,
+  globalAnimationTime: 0,
+  isGlobalAnimationPlaying: false,
+  globalAnimationSpeed: 1.0,
 
   // Actions
   addObject: (object: SceneObject) => {
@@ -225,6 +238,41 @@ export const useSceneStore = create<SceneStore>((set, get) => ({
   getSelectedObjects: () => {
     const { objects, selectedObjects } = get();
     return selectedObjects.map(id => objects.get(id)).filter(Boolean) as SceneObject[];
+  },
+
+  getAnimatedObjects: () => {
+    const { objects } = get();
+    return Array.from(objects.values()).filter(obj => obj.animations && obj.animations.clips.length > 0);
+  },
+
+  // Animation methods
+  setGlobalAnimationTime: (time: number) => {
+    set({ globalAnimationTime: time });
+  },
+
+  setGlobalAnimationPlaying: (playing: boolean) => {
+    set({ isGlobalAnimationPlaying: playing });
+  },
+
+  setGlobalAnimationSpeed: (speed: number) => {
+    set({ globalAnimationSpeed: speed });
+  },
+
+  updateObjectAnimation: (objectId: string, animationUpdates: Partial<SceneObject['animations']>) => {
+    set((state) => {
+      const newObjects = new Map(state.objects);
+      const object = newObjects.get(objectId);
+      
+      if (object) {
+        const updatedObject = {
+          ...object,
+          animations: object.animations ? { ...object.animations, ...animationUpdates } : undefined
+        };
+        newObjects.set(objectId, updatedObject);
+      }
+      
+      return { objects: newObjects };
+    });
   },
 
   generateId: () => {

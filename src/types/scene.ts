@@ -1,5 +1,23 @@
 import * as THREE from 'three';
 
+export interface AnimationClip {
+  id: string;
+  name: string;
+  duration: number;
+  tracks: THREE.KeyframeTrack[];
+  threeClip: THREE.AnimationClip;
+}
+
+export interface AnimationState {
+  clips: AnimationClip[];
+  currentTime: number;
+  isPlaying: boolean;
+  playbackSpeed: number;
+  loop: boolean;
+  activeClips: string[];
+  mixer?: THREE.AnimationMixer;
+}
+
 export interface SceneObject {
   id: string;
   name: string;
@@ -9,6 +27,7 @@ export interface SceneObject {
   locked: boolean;
   children?: SceneObject[];
   parent?: string;
+  animations?: AnimationState;
 }
 
 export interface Transform {

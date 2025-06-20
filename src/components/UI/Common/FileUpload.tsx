@@ -88,7 +88,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ children }) => {
 
   const supportedFormats = ['.glb', '.gltf', '.fbx'];
 
-  const loadGLTF = async (file: File): Promise<THREE.Object3D> => {
+  const loadGLTF = async (file: File): Promise<{ scene: THREE.Object3D; animations: THREE.AnimationClip[] }> => {
     return new Promise((resolve, reject) => {
       const loader = new GLTFLoader();
       const url = URL.createObjectURL(file);
@@ -97,7 +97,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ children }) => {
         url,
         (gltf) => {
           URL.revokeObjectURL(url);
-          resolve(gltf.scene);
+          resolve({ scene: gltf.scene, animations: gltf.animations || [] });
         },
         (progress) => {
           const percent = Math.round((progress.loaded / progress.total) * 100);
@@ -111,7 +111,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ children }) => {
     });
   };
 
-  const loadFBX = async (file: File): Promise<THREE.Object3D> => {
+  const loadFBX = async (file: File): Promise<{ scene: THREE.Object3D; animations: THREE.AnimationClip[] }> => {
     return new Promise((resolve, reject) => {
       const loader = new FBXLoader();
       const url = URL.createObjectURL(file);
@@ -120,7 +120,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ children }) => {
         url,
         (fbx) => {
           URL.revokeObjectURL(url);
-          resolve(fbx);
+          resolve({ scene: fbx, animations: fbx.animations || [] });
         },
         (progress) => {
           const percent = Math.round((progress.loaded / progress.total) * 100);
@@ -140,18 +140,45 @@ const FileUpload: React.FC<FileUploadProps> = ({ children }) => {
 
     try {
       const extension = file.name.toLowerCase().split('.').pop();
-      let object3D: THREE.Object3D;
+      let loadResult: { scene: THREE.Object3D; animations: THREE.AnimationClip[] };
 
       switch (extension) {
         case 'glb':
         case 'gltf':
-          object3D = await loadGLTF(file);
+          loadResult = await loadGLTF(file);
           break;
         case 'fbx':
-          object3D = await loadFBX(file);
+          loadResult = await loadFBX(file);
           break;
         default:
           throw new Error(`Unsupported file format: ${extension}`);
+      }
+
+      const { scene: object3D, animations: threeAnimations } = loadResult;
+
+      // Process animations if they exist
+      let animationState = undefined;
+      if (threeAnimations.length > 0) {
+        const mixer = new THREE.AnimationMixer(object3D);
+        const clips = threeAnimations.map((clip, index) => ({
+          id: `${generateId()}_clip_${index}`,
+          name: clip.name || `Animation ${index + 1}`,
+          duration: clip.duration,
+          tracks: clip.tracks,
+          threeClip: clip,
+        }));
+
+        animationState = {
+          clips,
+          currentTime: 0,
+          isPlaying: false,
+          playbackSpeed: 1.0,
+          loop: true,
+          activeClips: clips.map(clip => clip.id),
+          mixer,
+        };
+
+        console.log(`Loaded ${clips.length} animation(s):`, clips.map(c => c.name));
       }
 
       // Create scene object
@@ -163,6 +190,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ children }) => {
         object3D,
         visible: true,
         locked: false,
+        animations: animationState,
       };
 
       // Center the object

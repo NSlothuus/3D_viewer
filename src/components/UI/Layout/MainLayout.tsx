@@ -4,6 +4,7 @@ import Scene from '../../3D/Scene/Scene';
 import Outliner from '../Panels/Outliner';
 import Properties from '../Panels/Properties';
 import RenderSettings from '../Panels/RenderSettings';
+import Timeline from '../Panels/Timeline';
 import Toolbar from './Toolbar';
 import { useSceneStore } from '../../../stores/sceneStore';
 
@@ -23,6 +24,13 @@ const LayoutContainer = styled.div`
 `;
 
 const MainContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+`;
+
+const ViewportArea = styled.div`
   display: flex;
   flex: 1;
   overflow: hidden;
@@ -80,17 +88,21 @@ const MainLayout: React.FC = () => {
       />
       
       <MainContent>
-        <LeftPanel $isVisible={leftPanelVisible} $width={leftPanelWidth}>
-          <Outliner />
-        </LeftPanel>
+        <ViewportArea>
+          <LeftPanel $isVisible={leftPanelVisible} $width={leftPanelWidth}>
+            <Outliner />
+          </LeftPanel>
+          
+          <ViewportContainer>
+            <Scene onObjectClick={handleObjectClick} />
+          </ViewportContainer>
+          
+          <RightPanel $isVisible={rightPanelVisible} $width={rightPanelWidth}>
+            {rightPanelTab === 'properties' ? <Properties /> : <RenderSettings />}
+          </RightPanel>
+        </ViewportArea>
         
-        <ViewportContainer>
-          <Scene onObjectClick={handleObjectClick} />
-        </ViewportContainer>
-        
-        <RightPanel $isVisible={rightPanelVisible} $width={rightPanelWidth}>
-          {rightPanelTab === 'properties' ? <Properties /> : <RenderSettings />}
-        </RightPanel>
+        <Timeline />
       </MainContent>
     </LayoutContainer>
   );
